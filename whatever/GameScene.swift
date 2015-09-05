@@ -75,6 +75,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // 1
     let player = SKSpriteNode(imageNamed: "player")
     
+    var monstersDestroyed = 0
+    
     override func didMoveToView(view: SKView) {
         // 2
         backgroundColor = SKColor.whiteColor()
@@ -129,7 +131,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Create the actions
         let actionMove = SKAction.moveTo(CGPoint(x: -monster.size.width/2, y: actualY), duration: NSTimeInterval(actualDuration))
         let actionMoveDone = SKAction.removeFromParent()
-        monster.runAction(SKAction.sequence([actionMove, actionMoveDone]))
+        
+        let loseAction = SKAction.runBlock() {
+            let reveal = SKTransition.flipHorizontalWithDuration(0.5)
+            let gameOverScene = GameOverScene(size: self.size, won: false)
+            self.view?.presentScene(gameOverScene, transition: reveal)
+        }
+        monster.runAction(SKAction.sequence([actionMove, loseAction, actionMoveDone]))
+        
         
     }
     
@@ -184,6 +193,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         print("Hit")
         projectile.removeFromParent()
         monster.removeFromParent()
+        monstersDestroyed++
+        if (monstersDestroyed > 30) {
+            let reveal = SKTransition.flipHorizontalWithDuration(0.5)
+            let gameOverScene = GameOverScene(size: self.size, won: true)
+            self.view?.presentScene(gameOverScene, transition: reveal)
+        }
     }
     
     func didBeginContact(contact: SKPhysicsContact) {
